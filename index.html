@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="css/reveal.css">
+    <link rel="stylesheet" href="css/theme/black.css">
+</head>
+<body>
+    <div class="reveal">
+        <div id='slide-ingection' class="slides">
+        </div>
+    </div>
+    <script src="js/reveal.js"></script>
+</body>
+
+<script type="text/javascript">
+const mdParam = 'md'
+const pair=location.search.substring(1).split('&');
+var params = new Object;
+for(var i=0;pair[i];i++) {
+    var kv = pair[i].split('=');
+    params[kv[0]]=kv[1];
+}
+
+var md = 'data-separator="^---"'
+         + ' data-separator-vertical="^--"'
+         + ' data-separator-notes="^Note:"'
+         + ' data-charset="utf-8">'
+         + '</section>'
+if (params[mdParam] != undefined) {
+    md = '<section data-markdown="' + params[mdParam] + '.md" ' + md
+} else {
+    md = '<section data-markdown="README.md" ' + md
+}
+
+var slideElement = document.getElementById("slide-ingection")
+slideElement.innerHTML = md
+// 表示崩れを防ぐため
+setTimeout(Reveal.initialize, 1000)
+
+</script>
+<script src="plugin/markdown/marked.js"></script>
+<script src="plugin/markdown/markdown.js"></script>
+</html>
