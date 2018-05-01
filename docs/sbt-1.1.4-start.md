@@ -1,4 +1,4 @@
-# sbtは何故起動するのか
+# (執筆中）sbtは何故起動するのか
 
 ---
 
@@ -129,13 +129,11 @@ run "$@"
 
 --
 
-## jarの展開
+## MEMO: jarの展開
 
 `jar -xvf sbt-launch.jar`
 
 --
-
-## module properties
 
 ```
 $ cat module.properties
