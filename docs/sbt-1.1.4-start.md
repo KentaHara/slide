@@ -139,3 +139,21 @@ run "$@"
 $ cat module.properties
 version=2.3.0-sbt-b18f59ea3bc914a297bb6f1a4f7fb0ace399e310
 ```
+
+---
+
+## xsbti, xsbt ([sbt/zinc](https://github.com/sbt/zinc))
+
+* Zinc is the incremental compiler for Scala
+
+--
+
+## MEMO: 元のcompilerはscalacを使用している
+
+* [bridge213.sh](https://github.com/sbt/zinc/blob/1.x/bin/bridge213.sh)
+
+```bash
+...
+"$SCALA_X_HOME/bin/scalac" \
+...
+```
