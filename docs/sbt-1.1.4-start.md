@@ -8,6 +8,13 @@
 
 ---
 
+## TL; DR
+
+* [sbt-launcher-package](https://github.com/sbt/sbt-launcher-package)が基本
+    * `src/universal` をベースとして読み進めるのが良さそう
+
+---
+
 ## `which sbt`
 
 * コマンドの所在
@@ -36,7 +43,7 @@
 
 ---
 
-## `cat sbt` 
+## `cat sbt/1.1.4/libexec/bin/sbt` 
 
 * dir
     * `/usr/local/Cellar/sbt/1.1.4/libexec/bin/`
@@ -114,41 +121,44 @@ run "$@"
 
 ## cat `sbt-launch-lib.bash`
 
-諸々が動いている定義的なサムシング
+諸々が動いている定義
 
 * dir
     * `/usr/local/Cellar/sbt/1.1.4/libexec/bin/`
-
-
----
-
-## `sbt-launch.jar`
-
-* dir
-    * `/usr/local/Cellar/sbt/1.1.4/libexec/bin/`
+* [sbt-launch.jar](https://github.com/sbt/launcher)でのLibrary読み込み後、sbtのコマンドを実行
 
 --
 
-## MEMO: jarの展開
+## jarの展開
 
 `jar -xvf sbt-launch.jar`
-
---
 
 ```
 $ cat module.properties
 version=2.3.0-sbt-b18f59ea3bc914a297bb6f1a4f7fb0ace399e310
 ```
+    * [ivy](https://github.com/sbt/ivy)のversion
+
+--
+
+## [ivy](http://ant.apache.org/ivy/)
+
+> The agile dependency manager
+
+* Mavenの機能の中からビルド機能やプロジェクト管理機能を無くして、ライブラリーの依存関係の管理に特化したツール
+
 
 ---
 
 ## xsbti, xsbt ([sbt/zinc](https://github.com/sbt/zinc))
 
-* Zinc is the incremental compiler for Scala
+ZincはScalaの定期的なコンパイラ
+
+> Zinc is the incremental compiler for Scala
 
 --
 
-## MEMO: 元のcompilerはscalacを使用している
+## 元のcompilerはscalacを使用
 
 * [bridge213.sh](https://github.com/sbt/zinc/blob/1.x/bin/bridge213.sh)
 
