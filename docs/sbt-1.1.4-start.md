@@ -236,6 +236,7 @@ private def runImpl(args: LauncherArguments): Option[LauncherArguments] =
 def apply(arguments: LauncherArguments): Option[Int] = apply((new File("")).getAbsoluteFile, arguments)
 def apply(currentDirectory: File, arguments: LauncherArguments): Option[Int] = ...
 ```
+
     * ちなみに、後者のapplyは他からの呼び出しはされていない
 
 --
@@ -380,7 +381,89 @@ final class RunConfiguration(
 )
 ```
 
+--
 
+## Package `xsbt.boot.Boot` の内部を見る - `Launch -> run -> appProvider`
+
+* アプリの宣言（app; ApplicationIDによって制御、sbtを使用する場合はアプリとしてsbtがconfigによって宣言される）
+```scala
+val appProvider: xsbti.AppProvider = launcher.app(app, orNull(scalaVersion)) // takes ~40 ms when no update is required
+```
+
+* `xsbti/Launcher`
+```java
+/**
+ * returns an `AppProvider` which is able to resolve an application
+ * and instantiate its `xsbti.Main` in a new classloader.
+ * See [AppProvider] for more details.
+ * @param id  The artifact coordinates of the application.
+ * @param version The version to resolve
+ */
+public AppProvider app(ApplicationID id, String version);
+```
+
+--
+
+## Package `xsbt.boot.Boot` の内部を見る - `Launch -> run -> appConfig`
+
+* Config込みでアプリを伝搬
+```scala
+val appConfig: xsbti.AppConfiguration = new AppConfiguration(toArray(arguments), workingDirectory, appProvider)
+```
+
+* `LaunchConfiguration`
+```scala
+final class AppConfiguration(val arguments: Array[String], val baseDirectory: File, val provider: xsbti.AppProvider) extends xsbti.AppConfiguration
+```
+
+* `xsbti/AppConfiguration`
+```java
+public interface AppConfiguration
+{
+    public String[] arguments();
+    public File baseDirectory();
+    public AppProvider provider();
+}
+```
+
+--
+
+## Package `xsbt.boot.Boot` の内部を見る - `Launch -> run -> JAnsi.install`
+
+* loaderを利用して、logをoutput用に[Jansi](https://fusesource.github.io/jansi/)をloadする
+```scala
+// TODO - Jansi probably should be configurable via some other mechanism...
+JAnsi.install(launcher.topLoader)
+```
+
+## Package `xsbt.boot.Boot` の内部を見る - `Launch -> run -> withContextLoader`
+
+* loaderを利用して、appを実行させる
+```scala
+try {
+  val main = appProvider.newMain()
+  try { withContextLoader(appProvider.loader)(main.run(appConfig)) }
+  catch { case e: xsbti.FullReload => if (e.clean) delete(launcher.bootDirectory); throw e }
+} finally {
+  JAnsi.uninstall(launcher.topLoader)
+}
+```
+
+* `withContextLoader`
+```scala
+private[this] def withContextLoader[T](loader: ClassLoader)(eval: => T): T =
+  {
+    val oldLoader = Thread.currentThread.getContextClassLoader
+    Thread.currentThread.setContextClassLoader(loader)
+    try { eval } finally { Thread.currentThread.setContextClassLoader(oldLoader) }
+  }
+```
+
+* `xsbti/AppMain.java`
+
+```java
+public MainResult run(AppConfiguration configuration);
+```
 
 --
 
