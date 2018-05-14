@@ -35,7 +35,13 @@ if (params[mdParam] != undefined) {
 var slideElement = document.getElementById("slide-ingection")
 slideElement.innerHTML = md
 // 表示崩れを防ぐため
-setTimeout(Reveal.initialize, 1000)
+setTimeout(Reveal.initialize({
+    width: 960,
+    height: 700,
+    margin: 0.1,
+    cale: 0.2,
+    maxScale: 1.5
+}), 1000)
 
 </script>
 <script src="plugin/markdown/marked.js"></script>
