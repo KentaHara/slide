@@ -237,8 +237,6 @@ def apply(arguments: LauncherArguments): Option[Int] = apply((new File("")).getA
 def apply(currentDirectory: File, arguments: LauncherArguments): Option[Int] = ...
 ```
 
-    * ちなみに、後者のapplyは他からの呼び出しはされていない
-
 --
 
 ## Package `xsbt.boot.Boot` の内部を見る - `Launch.apply`
