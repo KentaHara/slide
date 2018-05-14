@@ -189,10 +189,10 @@ def main(args: Array[String]) {
 def parseArgs(args: Array[String]): LauncherArguments = ...
 ```
 
+* `isLocate` は `--locate` parameterが存在しているかどうかを指している
 ```scala
 class LauncherArguments(val args: List[String], val isLocate: Boolean)
 ```
-    * `isLocate` は `--locate` parameterが存在しているかどうかを指している
 
 --
 
@@ -435,6 +435,8 @@ public interface AppConfiguration
 // TODO - Jansi probably should be configurable via some other mechanism...
 JAnsi.install(launcher.topLoader)
 ```
+
+--
 
 ## Package `xsbt.boot.Boot` の内部を見る - `Launch -> run -> withContextLoader`
 
