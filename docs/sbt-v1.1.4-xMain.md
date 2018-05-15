@@ -55,6 +55,8 @@ final case class State(
 
 --
 
+### `sbt.Command`
+
 ```scala
 /**
  * An operation that can be executed from the sbt console.
@@ -74,6 +76,29 @@ sealed trait Command {
     case sc: SimpleCommand => Some(sc.name)
     case _                 => None
   }
+}
+```
+
+--
+
+### `import sbt.internal.util.complete.Parser`
+
+```scala
+/**
+ * A String parser that provides semi-automatic tab completion.
+ * A successful parse results in a value of type `T`.
+ * The methods in this trait are what must be implemented to define a new Parser implementation, but are not typically useful for common usage.
+ * Instead, most useful methods for combining smaller parsers into larger parsers are implicitly added by the [[RichParser]] type.
+ */
+sealed trait Parser[+T] {
+  def derive(i: Char): Parser[T]
+  def resultEmpty: Result[T]
+  def result: Option[T]
+  def completions(level: Int): Completions
+  def failure: Option[Failure]
+  def isTokenStart = false
+  def ifValid[S](p: => Parser[S]): Parser[S]
+  def valid: Boolean
 }
 ```
 
