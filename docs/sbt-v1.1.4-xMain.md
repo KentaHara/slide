@@ -239,6 +239,8 @@ def applyEffect[T](
 
 ## `sbt.Builtincommands.defaults`
 
+* `name="add-default-commands"` とした `DefaultCommands` を `Command` として設定
+* Command詳細は `DefaultCommands` を参照下さい
 ```scala
 def defaults = Command.command(DefaultsCommand) { s =>
   s.copy(definedCommands = DefaultCommands)
@@ -290,6 +292,15 @@ private[sbt] final class SimpleCommand(
 ```
 
 ---
+
+## `sbt.BasicCommandStrings.runEarly`
+
+* early(初期の)設定として実行させるコマンド
+* `sbt early(initialize)` とterminalで打っても確認できる
+```scala
+def runEarly(command: String) = s"$EarlyCommand($command)"
+val EarlyCommand = "early"
+```
 
 
 
