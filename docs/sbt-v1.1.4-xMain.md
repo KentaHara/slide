@@ -10,6 +10,75 @@ launcherからの読み出し先がxMainであり、
 
 ---
 
+## TL; DR
+
+* `State`, `Command`が重要
+
+--
+
+### `sbt.State`
+
+```scala
+/**
+ * Data structure representing all command execution information.
+ *
+ * @param configuration provides access to the launcher environment, including the application configuration, Scala versions, jvm/filesystem wide locking, and the launcher itself
+ * @param definedCommands the list of command definitions that evaluate command strings.  These may be modified to change the available commands.
+ * @param onFailure the command to execute when another command fails.  `onFailure` is cleared before the failure handling command is executed.
+ * @param remainingCommands the sequence of commands to execute.  This sequence may be modified to change the commands to be executed.  Typically, the `::` and `:::` methods are used to prepend new commands to run.
+ * @param exitHooks code to run before sbt exits, usually to ensure resources are cleaned up.
+ * @param history tracks the recently executed commands
+ * @param attributes custom command state.  It is important to clean up attributes when no longer needed to avoid memory leaks and class loader leaks.
+ * @param next the next action for the command processor to take.  This may be to continue with the next command, adjust global logging, or exit.
+ */
+final case class State(
+    configuration: xsbti.AppConfiguration,
+    definedCommands: Seq[Command],
+    exitHooks: Set[ExitHook],
+    onFailure: Option[Exec],
+    remainingCommands: List[Exec],
+    history: State.History,
+    attributes: AttributeMap,
+    globalLogging: GlobalLogging,
+    currentCommand: Option[Exec],
+    next: State.Next
+) extends Identity {
+  lazy val combinedParser = Command.combine(definedCommands)(this)
+
+  def source: Option[CommandSource] =
+    currentCommand match {
+      case Some(x) => x.source
+      case _       => None
+    }
+}
+```
+
+--
+
+```scala
+/**
+ * An operation that can be executed from the sbt console.
+ *
+ * <p>The operation takes a [[sbt.State State]] as a parameter and returns a [[sbt.State State]].
+ * This means that a command can look at or modify other sbt settings, for example.
+ * Typically you would resort to a command when you need to do something that's impossible in a regular task.
+ */
+sealed trait Command {
+  def help: State => Help
+  def parser: State => Parser[() => State]
+
+  def tags: AttributeMap
+  def tag[T](key: AttributeKey[T], value: T): Command
+
+  def nameOption: Option[String] = this match {
+    case sc: SimpleCommand => Some(sc.name)
+    case _                 => None
+  }
+}
+```
+
+---
+
 ## `sbt.xMain`
 
 ```scala
@@ -67,14 +136,27 @@ public interface AppProvider
 
 ## `sbt.BasicCommands.early`
 
+* 初期のCommandを設定している
 ```scala
 def early: Command = Command.arb(earlyParser, earlyHelp)((s, other) => other :: s)
+```
+
+* `BasicCommands.earlyParser` と `BasicCommands.help`
+```scala
+private[this] def earlyParser: State => Parser[String] = (s: State) => {
+  val p1 = token(EarlyCommand + "(") flatMap (_ => otherCommandParser(s) <~ token(")"))
+  val p2 = token("-") flatMap (_ => levelParser)
+  p1 | p2
+}
+
+private[this] def earlyHelp = Help(EarlyCommand, EarlyCommandBrief, EarlyCommandDetailed)
 ```
 
 --
 
 ### `sbt.Command.arb`
 
+* arb（任意の; arbitrary）は `parser[T]` に対して `effect`（ `T => State` ）適応し、Stateに変更できるようにする。そして、helpを結合させる
 ```scala
 def arb[T](
   parser: State => Parser[T],
@@ -86,30 +168,29 @@ def arb[T](
 
 --
 
-### `sbt.State`
+### `sbt.Command.custom`
+
+* parserとhelpを結合してCommandとして返す
+```scala
+def custom(
+  parser: State => Parser[() => State],
+  help: Help = Help.empty
+): Command =
+  customHelp(parser, const(help))
+```
+
+--
+
+### `sbt.Command.customHelp`
 
 ```scala
-final case class State(
-    configuration: xsbti.AppConfiguration,
-    definedCommands: Seq[Command],
-    exitHooks: Set[ExitHook],
-    onFailure: Option[Exec],
-    remainingCommands: List[Exec],
-    history: State.History,
-    attributes: AttributeMap,
-    globalLogging: GlobalLogging,
-    currentCommand: Option[Exec],
-    next: State.Next
-) extends Identity {
-  lazy val combinedParser = Command.combine(definedCommands)(this)
-
-  def source: Option[CommandSource] =
-    currentCommand match {
-      case Some(x) => x.source
-      case _       => None
-    }
-}
+def customHelp(
+  parser: State => Parser[() => State],
+  help: State => Help
+): Command =
+  new ArbitraryCommand(parser, help, AttributeMap.empty)
 ```
+
 --
 
 ### `sbt.Command.applyEffect`
@@ -128,6 +209,62 @@ def applyEffect[T](
 ): State => Parser[() => State] =
   s => applyEffect(parser(s))(t => effect(s, t))
 ```
+
+---
+
+## `sbt.Builtincommands.defaults`
+
+```scala
+def defaults = Command.command(DefaultsCommand) { s =>
+  s.copy(definedCommands = DefaultCommands)
+}
+```
+
+--
+
+### `sbt.Command.command`
+
+```scala
+/** Construct a no-argument command with the given name and effect. */
+def command(
+  name: String,
+  help: Help = Help.empty
+)(
+  f: State => State
+): Command =
+  make(name, help)(state => success(() => f(state)))
+```
+
+--
+
+### `sbt.Command.make`
+
+```scala
+def make(
+  name: String,
+  help: Help = Help.empty
+)(
+  parser: State => Parser[() => State]
+): Command =
+  new SimpleCommand(name, help, parser, AttributeMap.empty)
+```
+
+```scala
+private[sbt] final class SimpleCommand(
+    val name: String,
+    private[sbt] val help0: Help,
+    val parser: State => Parser[() => State],
+    val tags: AttributeMap
+) extends Command {
+  assert(Command validID name, s"'$name' is not a valid command name.")
+  def help = const(help0)
+  def tag[T](key: AttributeKey[T], value: T): SimpleCommand =
+    new SimpleCommand(name, help0, parser, tags.put(key, value))
+  override def toString = s"SimpleCommand($name)"
+}
+```
+
+---
 
 
 
