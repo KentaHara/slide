@@ -16,7 +16,7 @@
 
 ---
 
-## Information
+## 前提条件
 
 ```scala
 sbt.version=1.1.4
