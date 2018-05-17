@@ -24,7 +24,7 @@ sbt.version=1.1.4
 
 ---
 
-## `build.sbt` はどのように読み込まれる？
+## `build.sbt`はどのタイミング読み込まれる？
 
 `sbt XXX`は[sbt-launch.jar](https://github.com/sbt/launcher)から[sbt](https://github.com/sbt/sbt)の`xMain`関数を実行
 
@@ -118,13 +118,12 @@ def loadProjectCommands(arg: String): List[String] =
 ### `loadProjectCommand`
 
 - command
-    - `LoadFailed`: 失敗した場合の再読込ようCommand
-    - `LoadProjectImpl`: 具体的なProjectの読み込みCommand
+    - `LoadFailed`
+    - `LoadProjectImpl`
 - arg
     - Project.Value
         - `plugins`
         - `returns`
-            - 両者失敗した場合は `current`
 
 ```scala
 private[this] def loadProjectCommand(command: String, arg: String): String =
@@ -199,17 +198,7 @@ def defaultLoad(
 
 ![Load.defaultLoad.apply](https://www.scala-sbt.org/1.0/docs/files/settings-initialization-load-ordering.png)
 
-```scala
-// build, load, and evaluate all units.
-//  1) Compile all plugin definitions
-//  2) Evaluate plugin definitions to obtain and compile plugins and get the resulting classpath for the build definition
-//  3) Instantiate Plugins on that classpath
-//  4) Compile all build definitions using plugin classpath
-//  5) Load build definitions.
-//  6) Load all configurations using build definitions and plugins (their classpaths and loaded instances).
-//  7) Combine settings from projects, plugins, and configurations
-//  8) Evaluate settings
-```
+[sbt: Setting Initialization](https://www.scala-sbt.org/1.0/docs/Setting-Initialization.html)より引用
 
 --
 
