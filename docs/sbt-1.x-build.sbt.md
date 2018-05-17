@@ -16,15 +16,15 @@
 
 ## 目的
 
-* `build.sbt` を理解した上で記述できるようになれたら嬉しい
+`build.sbt` を理解した上で記述できるようになれたら嬉しい
 
 ---
 
 ## 目次
 
-* `SettingKey[T]` 、 `TaskKey[T]` 、 `InputKey[T]` の性質
-* Keys.scalaに関して
-* 余力があれば、その他Libraryなど紹介
+`SettingKey[T]` 、 `TaskKey[T]` 、 `InputKey[T]` の性質
+Keys.scalaに関して
+余力があれば、その他Libraryなど紹介
 
 ---
 
