@@ -135,6 +135,8 @@ private[this] def loadProjectCommand(command: String, arg: String): String =
 
 ### `LoadProjectImpl` Command
 
+`settingKey`のdefaultの呼び出しは`Load.defaultLoad`によって成される
+
 ```scala
 // sbt/Main.scala
 def loadProjectImpl: Command =
@@ -161,6 +163,138 @@ def doLoadProject(s0: State, action: LoadAction.Value): State = {
   Project.setProject(session, structure, s)
 }
 ```
+
+--
+
+## `Load.defaultLoad`
+
+`apply(base, state, config)`
+
+```scala
+// note that there is State passed in but not pulled out
+def defaultLoad(
+    state: State,
+    baseDirectory: File,
+    log: Logger,
+    isPlugin: Boolean = false,
+    topLevelExtras: List[URI] = Nil
+): (() => Eval, BuildStructure) = {
+  val (base, config) = timed("Load.defaultLoad until apply", log) {
+    val globalBase = getGlobalBase(state)
+    val base = baseDirectory.getCanonicalFile
+    val rawConfig = defaultPreGlobal(state, base, globalBase, log)
+    val config0 = defaultWithGlobal(state, base, rawConfig, globalBase, log)
+    val config =
+      if (isPlugin) enableSbtPlugin(config0) else config0.copy(extraBuilds = topLevelExtras)
+    (base, config)
+  }
+  val result = apply(base, state, config)
+  result
+}
+```
+
+--
+
+## `Load.defaultLoad.apply`
+
+![Load.defaultLoad.apply](https://www.scala-sbt.org/1.0/docs/files/settings-initialization-load-ordering.png)
+
+```scala
+// build, load, and evaluate all units.
+//  1) Compile all plugin definitions
+//  2) Evaluate plugin definitions to obtain and compile plugins and get the resulting classpath for the build definition
+//  3) Instantiate Plugins on that classpath
+//  4) Compile all build definitions using plugin classpath
+//  5) Load build definitions.
+//  6) Load all configurations using build definitions and plugins (their classpaths and loaded instances).
+//  7) Combine settings from projects, plugins, and configurations
+//  8) Evaluate settings
+```
+
+--
+
+## `Load.resolveProject -> expandSettings`
+
+`AddSettings.allDefaults`によりloadするファイル群を設定している
+型`Setting`により各種設定を読み込んでいる
+
+```scala
+// Expand the AddSettings instance into a real Seq[Setting[_]] we'll use on the project
+def expandSettings(auto: AddSettings): Seq[Setting[_]] = auto match {
+  case BuildScalaFiles     => p.settings
+  case User                => globalUserSettings.cachedProjectLoaded(loadedPlugins.loader)
+  case sf: SbtFiles        => settings(sf.files.map(f => IO.resolve(p.base, f)))
+  case sf: DefaultSbtFiles => settings(defaultSbtFiles.filter(sf.include))
+  case p: AutoPlugins      => autoPluginSettings(p)
+  case q: Sequence =>
+    (Seq.empty[Setting[_]] /: q.sequence) { (b, add) =>
+      b ++ expandSettings(add)
+    }
+}
+
+expandSettings(AddSettings.allDefaults)
+```
+
+--
+
+## `AddSettings`
+
+```scala
+/** The default inclusion of settings. */
+val allDefaults: AddSettings = seq(autoPlugins, buildScalaFiles, userSettings, defaultSbtFiles)
+
+
+/** Adds all settings from autoplugins. */
+val autoPlugins : AddSettings = new AutoPlugins(const(true)) 
+
+/** Settings specified in Build.scala `Project` constructors. */
+val buildScalaFiles: AddSettings = BuildScalaFiles
+
+/** Includes user settings in the project. */
+val userSettings: AddSettings = User
+
+/** Includes the settings from all .sbt files in the project's base directory. */
+val defaultSbtFiles: AddSettings = new DefaultSbtFiles(const(true))
+```
+
+--
+
+## SettingsのLoad時info
+
+```
+[info] Loading settings from idea.sbt ...
+
+[info] Loading global plugins from /Users/k_hara/.sbt/1.0/plugins
+[info] Loading settings from assembly.sbt,plugins.sbt ...
+[info] Loading project definition from /Users/k_hara/example/scala-examples/project
+[info] Loading settings from build.sbt ...
+```
+
+---
+
+## Settingとは？
+
+build.sbt --load--> Setting
+
+--
+
+### `sealed class Setting[T]`
+
+```scala
+sealed trait SettingsDefinition {
+  def settings: Seq[Setting[_]]
+}
+
+sealed class Setting[T] private[Init] (
+    val key: ScopedKey[T],
+    val init: Initialize[T],
+    val pos: SourcePosition
+) extends SettingsDefinition {
+  def settings = this :: Nil
+  // ...
+}
+```
+
 
 
 ---
