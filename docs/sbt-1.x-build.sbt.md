@@ -21,7 +21,9 @@
 ## 目次
 
 `SettingKey[T]` 、 `TaskKey[T]` 、 `InputKey[T]` の性質
+
 Keys.scalaに関して
+
 余力があれば、その他Libraryなど紹介
 
 ---
