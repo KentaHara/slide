@@ -175,6 +175,7 @@ def doLoadProject(s0: State, action: LoadAction.Value): State = {
 ## Build Definition
 
 * `settings` 内に記載
+
 ```scala
 lazy val root = (project in file("."))
 .settings(
@@ -187,32 +188,40 @@ lazy val root = (project in file("."))
 ## `settings`
 
 * `sbt/Project.scala`
-    ```scala
-    def settings: Seq[Setting[_]]
-    def settings(ss: Def.SettingsDefinition*): Project =
-          copy(settings = (settings: Seq[Def.Setting[_]]) ++ Def.settings(ss: _*))
-    ```
+
+```scala
+def settings: Seq[Setting[_]]
+def settings(ss: Def.SettingsDefinition*): Project =
+      copy(settings = (settings: Seq[Def.Setting[_]]) ++ Def.settings(ss: _*))
+```
+
 --
 
 ## `Setting`
 
 * `Import.scala`
-    ```scala
-    type Setting[T] = Def.Setting[T]
-    ```
+
+```scala
+type Setting[T] = Def.Setting[T]
+```
+--
+
+## `Setting`
+
 * `sbt/internal/util/Settings.scala`
-    ```scala
-    sealed trait Settings[Scope] {
-      def data: Map[Scope, AttributeMap]
-      def keys(scope: Scope): Set[AttributeKey[_]]
-      def scopes: Set[Scope]
-      def definingScope(scope: Scope, key: AttributeKey[_]): Option[Scope]
-      def allKeys[T](f: (Scope, AttributeKey[_]) => T): Seq[T]
-      def get[T](scope: Scope, key: AttributeKey[T]): Option[T]
-      def getDirect[T](scope: Scope, key: AttributeKey[T]): Option[T]
-      def set[T](scope: Scope, key: AttributeKey[T], value: T): Settings[Scope]
-    }
-    ```
+
+```scala
+sealed trait Settings[Scope] {
+  def data: Map[Scope, AttributeMap]
+  def keys(scope: Scope): Set[AttributeKey[_]]
+  def scopes: Set[Scope]
+  def definingScope(scope: Scope, key: AttributeKey[_]): Option[Scope]
+  def allKeys[T](f: (Scope, AttributeKey[_]) => T): Seq[T]
+  def get[T](scope: Scope, key: AttributeKey[T]): Option[T]
+  def getDirect[T](scope: Scope, key: AttributeKey[T]): Option[T]
+  def set[T](scope: Scope, key: AttributeKey[T], value: T): Settings[Scope]
+}
+```
 
 --
 
@@ -275,16 +284,16 @@ lazy val hello = taskKey[Unit]("An example task")
 
 * default
 
-    ```scala
-    // Rank:17.5 = (5 + 30)/2
-    final val DefaultTaskRank = (ATask + BTask) / 2
+```scala
+// Rank:17.5 = (5 + 30)/2
+final val DefaultTaskRank = (ATask + BTask) / 2
 
-    // Rank:5
-    final val DefaultInputRank = ATask // input tasks are likely a main task
+// Rank:5
+final val DefaultInputRank = ATask // input tasks are likely a main task
 
-    // Rank:25 = (10 + 40)/2
-    final val DefaultSettingRank = (ASetting + BSetting) / 2
-    ```
+// Rank:25 = (10 + 40)/2
+final val DefaultSettingRank = (ASetting + BSetting) / 2
+```
 
 ---
 
