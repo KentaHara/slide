@@ -26,14 +26,15 @@ sbt.version=1.1.4
 
 ## `build.sbt` はどのように読み込まれる？
 
-- `sbt XXX` は [sbt-launch.jar](https://github.com/sbt/launcher)から[sbt](https://github.com/sbt/sbt)の `xMain` 関数を実行
-    - `sbt-launch.jar` -> `sbt` としての設定ファイルは[sbt.boot.properties](https://github.com/sbt/sbt/blob/1.x/launch/src/main/input_resources/sbt/sbt.boot.properties)参照
+`sbt XXX` は [sbt-launch.jar](https://github.com/sbt/launcher)から[sbt](https://github.com/sbt/sbt)の `xMain` 関数を実行
+
+- `sbt-launch.jar` -> `sbt` としての設定ファイルは[sbt.boot.properties](https://github.com/sbt/sbt/blob/1.x/launch/src/main/input_resources/sbt/sbt.boot.properties)参照
 
 --
 
 ## `xMain`
 
-- `BootCommand` によって、sbt起動時にprojectの読み込みを実施
+`BootCommand` によって、sbt起動時にprojectの読み込みを実施
 
 ```scala
 /** This class is the entry point for sbt. */
@@ -54,7 +55,9 @@ final class xMain extends xsbti.AppMain {
 
 --
 
-### `BootCommand` - 1
+### `BootCommand`
+
+LoadProjectによりProject関連を読み込み
 
 ```scala
 // sbt/internal/CommandStrings.scala
@@ -71,20 +74,6 @@ def bootParser(s: State) = {
 def DefaultBootCommands: Seq[String] =
   WriteSbtVersion :: LoadProject :: NotifyUsersAboutShell :: s"$IfLast $Shell" :: Nil
 ```
-
---
-
-### `BootCommand` - 2
-
-- `sbt boot`で呼び出し可能
-- 4つのCommandを実行
-    - `WriteSbtVersion`: `project.properties`に対してsbt versionの記述をするCommand
-    - `LoadProject`: projectに関する読み込み ← `build.sbt` の読み込みもこのCommand
-    - `NotifyUsersAboutShell`: [Batch mode](https://www.scala-sbt.org/1.x/docs/Running.html)で使用するかどうかを通知するCommand
-        - compileを実行する場合
-        - build.sbtで`suppressSbtShellNotification := true`を宣言
-    - `s"$IfLast $Shell"`
-        - `sbt`のみで実行した場合は、sbtのshell modeを実行するCommand
 
 --
 
@@ -275,14 +264,14 @@ lazy val hello = taskKey[Unit]("An example task")
 
 * 何に使われているか調査
 
-* ranks
+ranks
 
 |Key/Rank|A|B|C|D|
 |---:|:---:|:---:|:---:|:---:|
 |Task   |5|30|200|20000|
 |Setting|10|40|100|10000|
 
-* default
+default
 
 ```scala
 // Rank:17.5 = (5 + 30)/2
@@ -336,7 +325,9 @@ object Defaults extends BuildCommon
 
 ---
 
-## NOTE
+# NOTE
+
+--
 
 ```
 # cat /usr/local/bin/sbt
@@ -347,3 +338,20 @@ if [ -f "$HOME/.sbtconfig" ]; then
 fi
 exec "/usr/local/Cellar/sbt/1.1.4/libexec/bin/sbt" "$@"
 ```
+
+--
+
+### `BootCommand` - 2
+
+- `sbt boot`で呼び出し可能
+- 4つのCommandを実行
+    - `WriteSbtVersion`: `project.properties`に対してsbt versionの記述をするCommand
+    - `LoadProject`: projectに関する読み込み ← `build.sbt` の読み込みもこのCommand
+    - `NotifyUsersAboutShell`: [Batch mode](https://www.scala-sbt.org/1.x/docs/Running.html)で使用するかどうかを通知するCommand
+        - compileを実行する場合
+        - build.sbtで`suppressSbtShellNotification := true`を宣言
+    - `s"$IfLast $Shell"`
+        - `sbt`のみで実行した場合は、sbtのshell modeを実行するCommand
+
+--
+
