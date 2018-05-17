@@ -54,17 +54,7 @@ final class xMain extends xsbti.AppMain {
 
 --
 
-### `BootCommand`
-
-- `sbt boot`で呼び出し可能
-- 4つのCommandを実行
-    - `WriteSbtVersion`: `project.properties`に対してsbt versionの記述をするCommand
-    - `LoadProject`: projectに関する読み込み ← `build.sbt` の読み込みもこのCommand
-    - `NotifyUsersAboutShell`: [Batch mode](https://www.scala-sbt.org/1.x/docs/Running.html)で使用するかどうかを通知するCommand
-        - compileを実行する場合
-        - build.sbtで`suppressSbtShellNotification := true`を宣言
-    - `s"$IfLast $Shell"`
-        - `sbt`のみで実行した場合は、sbtのshell modeを実行するCommand
+### `BootCommand` - 1
 
 ```scala
 // sbt/internal/CommandStrings.scala
@@ -81,6 +71,20 @@ def bootParser(s: State) = {
 def DefaultBootCommands: Seq[String] =
   WriteSbtVersion :: LoadProject :: NotifyUsersAboutShell :: s"$IfLast $Shell" :: Nil
 ```
+
+--
+
+### `BootCommand` - 2
+
+- `sbt boot`で呼び出し可能
+- 4つのCommandを実行
+    - `WriteSbtVersion`: `project.properties`に対してsbt versionの記述をするCommand
+    - `LoadProject`: projectに関する読み込み ← `build.sbt` の読み込みもこのCommand
+    - `NotifyUsersAboutShell`: [Batch mode](https://www.scala-sbt.org/1.x/docs/Running.html)で使用するかどうかを通知するCommand
+        - compileを実行する場合
+        - build.sbtで`suppressSbtShellNotification := true`を宣言
+    - `s"$IfLast $Shell"`
+        - `sbt`のみで実行した場合は、sbtのshell modeを実行するCommand
 
 --
 
