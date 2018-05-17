@@ -2,13 +2,13 @@
 
 ---
 
-## Goal
+## 目的
 
 * `build.sbt` を理解した上で記述できるようになれたら嬉しい
 
 ---
 
-## Agenda
+## 目次
 
 * `SettingKey[T]` 、 `TaskKey[T]` 、 `InputKey[T]` の性質
 * Keys.scalaに関して
@@ -438,17 +438,6 @@ private[sbt] trait BuildSyntax {
 private[sbt] object BuildSyntax extends BuildSyntax
 ```
 
----
-
-## [xsbti](https://www.scala-sbt.org/1.x/api/xsbti/index.html)
-
----
-
-## [sbt/Defaults](https://www.scala-sbt.org/1.1.2/api/sbt/Defaults$.html)
-
-```scala
-object Defaults extends BuildCommon
-```
 
 ---
 
@@ -482,3 +471,8 @@ exec "/usr/local/Cellar/sbt/1.1.4/libexec/bin/sbt" "$@"
 
 --
 
+## [sbt/Defaults](https://www.scala-sbt.org/1.1.2/api/sbt/Defaults$.html)
+
+```scala
+object Defaults extends BuildCommon
+```
