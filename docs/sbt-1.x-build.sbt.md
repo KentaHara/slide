@@ -26,9 +26,10 @@ sbt.version=1.1.4
 
 ## `build.sbt` はどのように読み込まれる？
 
-`sbt XXX` は [sbt-launch.jar](https://github.com/sbt/launcher)から[sbt](https://github.com/sbt/sbt)の `xMain` 関数を実行
+`sbt XXX`は[sbt-launch.jar](https://github.com/sbt/launcher)から[sbt](https://github.com/sbt/sbt)の`xMain`関数を実行
 
-- `sbt-launch.jar` -> `sbt` としての設定ファイルは[sbt.boot.properties](https://github.com/sbt/sbt/blob/1.x/launch/src/main/input_resources/sbt/sbt.boot.properties)参照
+`sbt-launch.jar` -> `sbt` としての設定ファイルは
+[sbt.boot.properties](https://github.com/sbt/sbt/blob/1.x/launch/src/main/input_resources/sbt/sbt.boot.properties)参照
 
 --
 
@@ -43,11 +44,14 @@ final class xMain extends xsbti.AppMain {
     import BasicCommands.early
     import BasicCommandStrings.runEarly
     import BuiltinCommands.defaults
-    import sbt.internal.CommandStrings.{ BootCommand, DefaultsCommand, InitCommand }
+    import sbt.internal.CommandStrings.{
+      BootCommand, DefaultsCommand, InitCommand
+    }
     val state = initialState(
       configuration,
       Seq(defaults, early),
-      runEarly(DefaultsCommand) :: runEarly(InitCommand) :: BootCommand :: Nil)
+      runEarly(DefaultsCommand) :: runEarly(InitCommand) :: BootCommand :: Nil
+    )
     runManaged(state)
   }
 }
