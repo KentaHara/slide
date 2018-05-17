@@ -165,7 +165,6 @@ public interface AppProvider
 ```scala
 def early: Command = Command.arb(earlyParser, earlyHelp)((s, other) => other :: s)
 ```
-
 * `BasicCommands.earlyParser` と `BasicCommands.help`
 ```scala
 private[this] def earlyParser: State => Parser[String] = (s: State) => {
@@ -309,9 +308,11 @@ val EarlyCommand = "early"
 ## `sbt.StandardMain.initialState`
 
 ```scala
-def initialState(configuration: xsbti.AppConfiguration,
-                 initialDefinitions: Seq[Command],
-                 preCommands: Seq[String]): State = {
+def initialState(
+  configuration: xsbti.AppConfiguration,
+  initialDefinitions: Seq[Command],
+  preCommands: Seq[String]
+): State = {
   // This is to workaround https://github.com/sbt/io/issues/110
   sys.props.put("jna.nosys", "true")
 
@@ -335,5 +336,188 @@ def initialState(configuration: xsbti.AppConfiguration,
     State.Continue
   )
   s.initializeClassLoaderCache
+}
+```
+
+--
+
+### `sbt.State.State.stateOps`
+```scala
+implicit def stateOps(s: State): StateOps = new StateOps {
+  ...
+  def put[T](key: AttributeKey[T], value: T) = s.copy(attributes = s.attributes.put(key, value))
+  ...
+  def initializeClassLoaderCache = s.put(BasicKeys.classLoaderCache, newClassLoaderCache)
+  ...
+}
+```
+
+---
+
+## `sbt.StandardMain.runManaged`
+
+
+```scala
+def runManaged(s: State): xsbti.MainResult = {
+  val previous = TrapExit.installManager()
+  try {
+    try {
+      try {
+        MainLoop.runLogged(s)
+      } finally exchange.shutdown
+    } finally DefaultBackgroundJobService.backgroundJobService.shutdown()
+  } finally TrapExit.uninstallManager(previous)
+}
+```
+
+--
+
+### `sbt.MainLoop.runLogged`
+
+```scala
+def runLogged(state: State): xsbti.MainResult = {
+  // We've disabled jline shutdown hooks to prevent classloader leaks, and have been careful to always restore
+  // the jline terminal in finally blocks, but hitting ctrl+c prevents finally blocks from being executed, in that
+  // case the only way to restore the terminal is in a shutdown hook.
+  val shutdownHook = new Thread(new Runnable {
+    def run(): Unit = TerminalFactory.get().restore()
+  })
+
+  try {
+    Runtime.getRuntime.addShutdownHook(shutdownHook)
+    runLoggedLoop(state, state.globalLogging.backing)
+  } finally {
+    Runtime.getRuntime.removeShutdownHook(shutdownHook)
+  }
+}
+```
+
+--
+
+### `sbt.MainLoop.runLoggedLoop`
+
+```scala
+/** Run loop that evaluates remaining commands and manages changes to global logging configuration.*/
+@tailrec def runLoggedLoop(state: State, logBacking: GlobalLogBacking): xsbti.MainResult =
+  runAndClearLast(state, logBacking) match {
+    case ret: Return => // delete current and last log files when exiting normally
+      logBacking.file.delete()
+      deleteLastLog(logBacking)
+      ret.result
+    case clear: ClearGlobalLog => // delete previous log file, move current to previous, and start writing to a new file
+      deleteLastLog(logBacking)
+      runLoggedLoop(clear.state, logBacking.shiftNew())
+    case keep: KeepGlobalLog => // make previous log file the current log file
+      logBacking.file.delete
+      runLoggedLoop(keep.state, logBacking.unshift)
+  }
+```
+
+--
+
+### `sbt.MainLoop.runLoggedLoop`
+
+```scala
+/** Runs the next sequence of commands, cleaning up global logging after any exceptions. */
+def runAndClearLast(state: State, logBacking: GlobalLogBacking): RunNext =
+  try runWithNewLog(state, logBacking)
+  catch {
+    case e: xsbti.FullReload =>
+      deleteLastLog(logBacking)
+      throw e // pass along a reboot request
+    case e: RebootCurrent =>
+      deleteLastLog(logBacking)
+      deleteCurrentArtifacts(state)
+      throw new xsbti.FullReload(e.arguments.toArray, false)
+    case NonFatal(e) =>
+      System.err.println(
+        "sbt appears to be exiting abnormally.\n  The log file for this session is at " + logBacking.file)
+      deleteLastLog(logBacking)
+      throw e
+  }
+```
+
+--
+
+### `sbt.MainLoop.runWithNewLog`
+
+```scala
+/** Runs the next sequence of commands with global logging in place. */
+def runWithNewLog(state: State, logBacking: GlobalLogBacking): RunNext =
+  Using.fileWriter(append = true)(logBacking.file) { writer =>
+    val out = new java.io.PrintWriter(writer)
+    val full = state.globalLogging.full
+    val newLogging = state.globalLogging.newAppender(full, out, logBacking)
+    // transferLevels(state, newLogging)
+    val loggedState = state.copy(globalLogging = newLogging)
+    try run(loggedState)
+    finally out.close()
+  }
+```
+
+--
+
+### `sbt.MainLoop.run`
+
+```scala
+/** Runs the next sequence of commands that doesn't require global logging changes.*/
+@tailrec def run(state: State): RunNext =
+  state.next match {
+    case State.Continue       => run(next(state))
+    case State.ClearGlobalLog => new ClearGlobalLog(state.continue)
+    case State.KeepLastLog    => new KeepGlobalLog(state.continue)
+    case ret: State.Return    => new Return(ret.result)
+  }
+```
+
+--
+
+### `sbt.MainLoop.next`
+
+
+```scala
+def next(state: State): State =
+  ErrorHandling.wideConvert { state.process(processCommand) } match {
+    case Right(s)                  => s
+    case Left(t: xsbti.FullReload) => throw t
+    case Left(t: RebootCurrent)    => throw t
+    case Left(t)                   => state.handleError(t)
+  }
+```
+
+--
+
+### `sbt.MainLoop.processCommand`
+
+```scala
+/** This is the main function State transfer function of the sbt command processing. */
+def processCommand(exec: Exec, state: State): State = {
+  import DefaultParsers._
+  val channelName = exec.source map (_.channelName)
+  StandardMain.exchange publishEventMessage ExecStatusEvent("Processing",
+                                                            channelName,
+                                                            exec.execId,
+                                                            Vector())
+  val parser = Command combine state.definedCommands
+  val newState = parse(exec.commandLine, parser(state)) match {
+    case Right(s) => s() // apply command.  command side effects happen here
+    case Left(errMsg) =>
+      state.log error errMsg
+      state.fail
+  }
+  val doneEvent = ExecStatusEvent(
+    "Done",
+    channelName,
+    exec.execId,
+    newState.remainingCommands.toVector map (_.commandLine),
+    exitCode(newState, state),
+  )
+  if (doneEvent.execId.isDefined) { // send back a response or error
+    import sbt.protocol.codec.JsonProtocol._
+    StandardMain.exchange publishEvent doneEvent
+  } else { // send back a notification
+    StandardMain.exchange publishEventMessage doneEvent
+  }
+  newState
 }
 ```
