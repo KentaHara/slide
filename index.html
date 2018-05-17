@@ -2,7 +2,7 @@
 <html>
 <head>
     <link rel="stylesheet" href="css/reveal.css">
-    <link rel="stylesheet" href="css/theme/black.css">
+    <link rel="stylesheet" href="css/theme/white.css">
 </head>
 <body>
     <div class="reveal">
@@ -40,11 +40,14 @@ var revealConfig = {
     height: 700,
     margin: 0.1,
     cale: 0.2,
-    maxScale: 1.5
+    maxScale: 1.5,
 }
 // 表示崩れを防ぐため
 setTimeout(function(config) {
     Reveal.initialize(config)
+    const pres = document.getElementsByTagName('pre')
+    Array.prototype.slice.call(pres).forEach(function(item){item.classList.add("prettyprint")})
+
     PR.prettyPrint()
 }, 1000, revealConfig)
 

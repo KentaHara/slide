@@ -34,6 +34,7 @@ sbt.version=1.1.4
 ## `xMain`
 
 - `BootCommand` によって、sbt起動時にprojectの読み込みを実施
+
 ```scala
 /** This class is the entry point for sbt. */
 final class xMain extends xsbti.AppMain {
@@ -127,12 +128,13 @@ def loadProjectCommands(arg: String): List[String] =
         - `plugins`
         - `returns`
             - 両者失敗した場合は `current`
+
 ```scala
 private[this] def loadProjectCommand(command: String, arg: String): String =
   s"$command $arg".trim
 ```
 
----
+--
 
 ### `LoadProjectImpl` Command
 
