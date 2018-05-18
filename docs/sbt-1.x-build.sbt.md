@@ -276,7 +276,7 @@ private[this] def loadProjectCommand(command: String, arg: String): String =
 
 ## `LoadProjectImpl`
 
-`settingKey`のdefaultの呼び出しは`Load.defaultLoad`によって成される
+keyの呼び出しは`Load.defaultLoad`によって成される
 
 ```scala
 // sbt/Main.scala
@@ -312,7 +312,7 @@ def doLoadProject(s0: State, action: LoadAction.Value): State = {
 `apply(base, state, config)`
 
 ```scala
-// note that there is State passed in but not pulled out
+// sbt.Load
 def defaultLoad(
     state: State,
     baseDirectory: File,
@@ -320,15 +320,7 @@ def defaultLoad(
     isPlugin: Boolean = false,
     topLevelExtras: List[URI] = Nil
 ): (() => Eval, BuildStructure) = {
-  val (base, config) = timed("Load.defaultLoad until apply", log) {
-    val globalBase = getGlobalBase(state)
-    val base = baseDirectory.getCanonicalFile
-    val rawConfig = defaultPreGlobal(state, base, globalBase, log)
-    val config0 = defaultWithGlobal(state, base, rawConfig, globalBase, log)
-    val config =
-      if (isPlugin) enableSbtPlugin(config0) else config0.copy(extraBuilds = topLevelExtras)
-    (base, config)
-  }
+  // ...
   val result = apply(base, state, config)
   result
 }
