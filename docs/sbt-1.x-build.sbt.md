@@ -598,6 +598,8 @@ $ sbt release
 
 # まとめ
 
+`build.sbt` を理解した上で記述できるようになれたら嬉しい
+
 --
 
 ## `SettingKey[T]`、`TaskKey[T]`の基本事項
@@ -638,13 +640,9 @@ sealed abstract class SettingKey[T]
 
 help時の出力数の制御や、XXXXのために使用されている
 
-```bash
-$ sbt "help settings"
-...
--v
-  Displays additional settings.
-  More 'v's increase the number of settings displayed.
-...
+```scala
+val name =
+  settingKey[String]("Project name.").withRank(APlusSetting)
 ```
 
 ---
