@@ -296,6 +296,46 @@ sealed class Setting[T] private[Init] (
 }
 ```
 
+--
+
+### `sealed abstract class SettingKey[T]`
+
+```scala
+sealed abstract class SettingKey[T]
+    extends ScopedTaskable[T]
+    with KeyedInitialize[T]
+    with Scoped.ScopingSetting[SettingKey[T]]
+    with Scoped.DefinableSetting[T] {
+// ...
+  final def :=(v: T): Setting[T] = macro std.TaskMacro.settingAssignMacroImpl[T]
+
+  final def +=[U](v: U)(implicit a: Append.Value[T, U]): Setting[T] =
+    macro std.TaskMacro.settingAppend1Impl[T, U]
+
+  final def ++=[U](vs: U)(implicit a: Append.Values[T, U]): Setting[T] =
+    macro std.TaskMacro.settingAppendNImpl[T, U]
+
+// ...
+}
+```
+
+--
+
+### `def settingAssignMacroImpl`
+
+ココらへんでmacroの知識が無くて少し死にたくなる（メモ）
+
+```scala
+// sbt.std.TaskMacro.scala
+
+/** Implementation of := macro for settings. */
+def settingAssignMacroImpl[T: c.WeakTypeTag](c: blackbox.Context)(
+    v: c.Expr[T]): c.Expr[Setting[T]] = {
+  val init = SettingMacro.settingMacroImpl[T](c)(v)
+  val assign = transformMacroImpl(c)(init.tree)(AssignInitName)
+  c.Expr[Setting[T]](assign)
+}
+```
 
 
 ---
