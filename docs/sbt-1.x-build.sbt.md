@@ -544,7 +544,7 @@ sealed trait AttributeKey[T] {
 
 --
 
-## rankの使用箇所
+## `tasks` or `settings` commandで使用
 
 ```scala
 // sbt.Main
@@ -555,39 +555,44 @@ def highPass(rankCutoff: Int) =
   (keys: Seq[AttributeKey[_]]) => sortByRank(keys).takeWhile(_.rank <= rankCutoff)
 ```
 
---
-
-## `tasks` or `settings` commandで使用
-
 標準だとtasksはrank6以上、settingsはrank11以上
 
 `-v` で表示件数を変更することも可能
-
 ```bash
 $ sbt "help settings"
-
-Syntax summary
-        settings [-(v|-vv|...|-V)] [<filter>]
-
-settings
-        Displays the main settings defined directly or indirectly for the current project.
-
--v
-        Displays additional settings.  More 'v's increase the number of settings displayed.
-
--V
-        displays all settings
-
-<filter>
 ...
 ```
 
+--
+
+## keyCompletions on SettingCompletions
+
+
 ---
 
-## Task Graph
+# sbt plugin
 
-* task graphとはなんぞや
+--
 
+## [sbt release](https://github.com/sbt/sbt-release)
+
+projectのversion管理をするplugin
+
+```scala
+addSbtPlugin("com.github.gseitz" % "sbt-release" % "1.0.8")
+```
+
+```bash
+$ sbt release
+```
+
+--
+
+余力があれば調べるが、多分このままで行くはず
+
+---
+
+# 初心者でも分かるbuild.sbtのsettings/task expression
 
 ---
 
