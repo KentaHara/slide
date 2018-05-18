@@ -4,11 +4,11 @@
 
 ![](img/face.jpg)
 
-### 原賢太 / Hara Kenta
+## 原賢太 / Hara Kenta
 1991.6.14
-#### 2014.3 九州工業大学 卒業
-#### 2016.3 九州工業大学大学院 修了
-#### 現在 株式会社ファンコミュニケーションズ
+### 2014.3 九州工業大学 卒業
+### 2016.3 九州工業大学大学院 修了
+### 現在 株式会社ファンコミュニケーションズ
 
 ---
 
@@ -36,7 +36,11 @@ sbt.version=1.1.4
 
 ---
 
-## [DSL(Domain-Specific Language)](https://www.scala-sbt.org/1.0/docs/Basic-Def.html)
+# [DSL(Domain-Specific Language)](https://www.scala-sbt.org/1.0/docs/Basic-Def.html)
+
+--
+
+## 定義
 
 `organization` : key
 
@@ -52,7 +56,26 @@ organization := {"com.example"}
 
 ## operator
 
+--
+
+## example
+
+```scala
+// setting
+name := "scala-examples"
+scalaVersion := "2.12.3"
+
+// task
+scalacOptions ++= Seq(
+    // ...
+)
+```
+
 ---
+
+# keyの種類について
+
+--
 
 ## Keys
 
@@ -73,18 +96,75 @@ organization := {"com.example"}
 import sbt.Keys._
 lazy val hello = taskKey[Unit]("An example task")
 ```
+--
+
+## [Default Keys](https://www.scala-sbt.org/1.x/api/sbt/Keys$.html)
+
+```scala
+val name = settingKey[String]("Project name.").withRank(APlusSetting)
+```
 
 --
 
 ## [Task vs Setting keys](https://www.scala-sbt.org/1.0/docs/Basic-Def.html#Task+vs+Setting+keys)
 
-Setting Keyはsbt起動時に実行される
+`SettingKey[T]`はサブプロジェクト読み込み時に値を保持
 
-Taskはcompile or package時に実行される
+`TaskKey[T]`はcompile or package時に値を計算・保持
+
+--
+
+## Keys Definition
+
+```scala
+// settingKey
+val name =
+  settingKey[String]("Project name.").withRank(APlusSetting)
+
+val libraryDependencies = 
+  settingKey[Seq[ModuleID]]("Declares managed dependencies.").withRank(APlusSetting)
+
+
+// taskKey
+val scalacOptions = 
+  taskKey[Seq[String]]("Options for the Scala compiler.").withRank(BPlusTask)
+```
+
+--
+
+## Build Definition
+
+`settings` 内に記載
+
+```scala
+lazy val root = (project in file("."))
+.settings(
+  name := "Hello",
+  scalaVersion := "2.12.3"
+)
+```
+--
+
+## `settings`
+
+`Def.Setting[_]`により制御
+```scala
+// sbt.Project
+def settings: Seq[Setting[_]]
+def settings(ss: Def.SettingsDefinition*): Project =
+      copy(settings = (settings: Seq[Def.Setting[_]]) ++ Def.settings(ss: _*))
+```
 
 ---
 
-# `build.sbt`って何者？
+# `build.sbt`
+
+StateとCommandの詳細については話しません
+
+
+State: sbt内でCommandの逐次処理を制御するもの
+
+Command: sbt内での実行単位
 
 --
 
@@ -123,7 +203,7 @@ final class xMain extends xsbti.AppMain {
 
 --
 
-### `BootCommand`
+## `BootCommand`
 
 LoadProjectによりProject関連を読み込み
 
@@ -145,7 +225,9 @@ def DefaultBootCommands: Seq[String] =
 
 --
 
-### `LoadProject`
+## `LoadProject`
+
+`$ sbt reload` と打てば動作確認できます
 
 ```scala
 // sbt/internal/CommandStrings.scala
@@ -165,7 +247,9 @@ val loadActionParser = token(Space ~> ("plugins" ^^^ Plugins | "return" ^^^ Retu
 
 --
 
-### `loadProjectCommands`
+## `loadProjectCommands`
+
+`loadProjectCommand`で実際に読み込みをする
 
 ```scala
 def loadProjectCommands(arg: String): List[String] =
@@ -179,7 +263,7 @@ def loadProjectCommands(arg: String): List[String] =
 
 --
 
-### `loadProjectCommand`
+## `loadProjectCommand`
 
 - command
     - `LoadFailed`
@@ -196,7 +280,7 @@ private[this] def loadProjectCommand(command: String, arg: String): String =
 
 --
 
-### `LoadProjectImpl` Command
+## `LoadProjectImpl`
 
 `settingKey`のdefaultの呼び出しは`Load.defaultLoad`によって成される
 
@@ -325,13 +409,17 @@ val defaultSbtFiles: AddSettings = new DefaultSbtFiles(const(true))
 
 ---
 
-## Settingとは？
+# Settingとは？
 
+```
 build.sbt --load--> Setting
+```
 
 --
 
-### `sealed class Setting[T]`
+## `Setting`
+
+ScopedKey等について一言ずつ追記する
 
 ```scala
 sealed trait SettingsDefinition {
@@ -350,9 +438,10 @@ sealed class Setting[T] private[Init] (
 
 --
 
-### `sealed abstract class SettingKey[T]`
+## `SettingKey`
 
 macroの話は少し重たいので、Setting typeとなると覚えていただければOK
+
 ```scala
 sealed abstract class SettingKey[T]
     extends ScopedTaskable[T]
@@ -367,89 +456,64 @@ sealed abstract class SettingKey[T]
 
   final def ++=[U](vs: U)(implicit a: Append.Values[T, U]): Setting[T] =
     macro std.TaskMacro.settingAppendNImpl[T, U]
-
 // ...
 }
 ```
 
----
+--
 
-## Build Definition
-
-`settings` 内に記載
+## `TaskKey`
 
 ```scala
-lazy val root = (project in file("."))
-.settings(
-  name := "Hello",
-  scalaVersion := "2.12.3"
+sealed abstract class TaskKey[T]
+    extends ScopedTaskable[T]
+    with KeyedInitialize[Task[T]]
+    with Scoped.ScopingSetting[TaskKey[T]] {
+// ...
+  def +=[U](v: U)(implicit a: Append.Value[T, U]): Setting[Task[T]] =
+    macro std.TaskMacro.taskAppend1Impl[T, U]
+
+  def ++=[U](vs: U)(implicit a: Append.Values[T, U]): Setting[Task[T]] =
+    macro std.TaskMacro.taskAppendNImpl[T, U]
+// ...
+```
+
+--
+
+## example
+
+```scala
+// setting
+name := "scala-examples"
+scalaVersion := "2.12.3"
+
+// task
+scalacOptions ++= Seq(
+    // ...
 )
 ```
---
-
-## `settings`
-
-`sbt/Project.scala`
-
-```scala
-def settings: Seq[Setting[_]]
-def settings(ss: Def.SettingsDefinition*): Project =
-      copy(settings = (settings: Seq[Def.Setting[_]]) ++ Def.settings(ss: _*))
-```
-
---
-
-## `Setting`
-
-`Import.scala`
-
-```scala
-type Setting[T] = Def.Setting[T]
-```
---
-
-## `Setting`
-
-`sbt/internal/util/Settings.scala`
-
-```scala
-sealed trait Settings[Scope] {
-  def data: Map[Scope, AttributeMap]
-  def keys(scope: Scope): Set[AttributeKey[_]]
-  def scopes: Set[Scope]
-  def definingScope(scope: Scope, key: AttributeKey[_]): Option[Scope]
-  def allKeys[T](f: (Scope, AttributeKey[_]) => T): Seq[T]
-  def get[T](scope: Scope, key: AttributeKey[T]): Option[T]
-  def getDirect[T](scope: Scope, key: AttributeKey[T]): Option[T]
-  def set[T](scope: Scope, key: AttributeKey[T], value: T): Settings[Scope]
-}
-```
-
---
-
-## `Def`
-
-```scala
-object Def extends Init[Scope] with TaskMacroExtra
-```
-
 
 ---
 
-## [Default Keys](https://www.scala-sbt.org/1.x/api/sbt/Keys$.html)
+# [KeyRanks](https://www.scala-sbt.org/1.x/api/sbt/KeyRanks$.html)
 
----
+```scala
+val name =
+  settingKey[String]("Project name.").withRank(APlusSetting)
+```
 
-## [KeyRanks](https://www.scala-sbt.org/1.x/api/sbt/KeyRanks$.html)
+--
 
-ranks
+## ranks
 
 |Key/Rank|A|B|C|D|
 |---:|:---:|:---:|:---:|:---:|
 |Task   |5|30|200|20000|
 |Setting|10|40|100|10000|
 
-default
+--
+
+## default
 
 ```scala
 // Rank:17.5 = (5 + 30)/2
@@ -463,7 +527,6 @@ final val DefaultSettingRank = (ASetting + BSetting) / 2
 ```
 
 --
-
 
 ## `AttributeKey[T]`
 
@@ -502,6 +565,7 @@ def highPass(rankCutoff: Int) =
 
 ```bash
 $ sbt "help settings"
+
 Syntax summary
         settings [-(v|-vv|...|-V)] [<filter>]
 
@@ -515,14 +579,7 @@ settings
         displays all settings
 
 <filter>
-        Restricts the settings that are displayed.  The names of settings are searched for
-        an exact match against the filter, in which case only the description of the
-        exact match is displayed.  Otherwise, the filter is interpreted as a regular
-        expression and all settings whose name or description match the regular
-        expression are displayed.  Note that this is an additional filter on top of
-        the settings selected by the -v style switches, so you must specify -V to search
-        all settings.  Use the help command to search all commands, tasks, and
-        settings at once.
+...
 ```
 
 ---
@@ -538,6 +595,8 @@ settings
 
 --
 
+## sbtの呼び出しbash
+
 ```
 # cat /usr/local/bin/sbt
 
@@ -550,7 +609,7 @@ exec "/usr/local/Cellar/sbt/1.1.4/libexec/bin/sbt" "$@"
 
 --
 
-### `BootCommand` - 2
+## BootCommandの詳細
 
 - `sbt boot`で呼び出し可能
 - 4つのCommandを実行
@@ -566,6 +625,7 @@ exec "/usr/local/Cellar/sbt/1.1.4/libexec/bin/sbt" "$@"
 
 ## [sbt/Defaults](https://www.scala-sbt.org/1.1.2/api/sbt/Defaults$.html)
 
+sbt起動時にsbtに記述されているsettingsを呼び出すために使用
 ```scala
 object Defaults extends BuildCommon
 ```
