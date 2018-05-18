@@ -1,4 +1,4 @@
-# 初心者でも分かるbuild.sbtのsettings/task expression
+# 初心者でも分かるbuild.sbtのsetting/task
 
 ---
 
@@ -641,7 +641,7 @@ $ sbt "help settings"
 
 ---
 
-# 初心者でも分かるbuild.sbtのsettings/task expression
+# 初心者でも分かるbuild.sbtのsetting/task
 
 ---
 
