@@ -36,6 +36,58 @@ sbt.version=1.1.4
 
 ---
 
+## [DSL(Domain-Specific Language)](https://www.scala-sbt.org/1.0/docs/Basic-Def.html)
+
+`organization` : key
+
+`:=` : operator
+
+`{"com.example"}` : (settings/task) body
+
+```scala
+organization := {"com.example"}
+```
+
+--
+
+## operator
+
+---
+
+## Keys
+
+* [`SettingKey[T]`](https://www.scala-sbt.org/1.x/api/sbt/SettingKey.html)
+    * サブプロジェクト読み込み時に値を保持
+* [`TaskKey[T]`](https://www.scala-sbt.org/1.x/api/sbt/TaskKey.html)
+    * 毎回値を計算
+* [`InputKey[T]`](https://www.scala-sbt.org/1.x/api/sbt/InputKey.html)
+    * コマンドライン引数を入力として持つタスクキー
+
+--
+
+## Custom Keys
+
+一般的に、初期化順問題を避けるために val の代わりに lazy val が用いられることが多い。
+
+```scala
+import sbt.Keys._
+lazy val hello = taskKey[Unit]("An example task")
+```
+
+--
+
+## [Task vs Setting keys](https://www.scala-sbt.org/1.0/docs/Basic-Def.html#Task+vs+Setting+keys)
+
+Setting Keyはsbt起動時に実行される
+
+Taskはcompile or package時に実行される
+
+---
+
+# `build.sbt`って何者？
+
+--
+
 ## `build.sbt`はどのタイミング読み込まれる？
 
 `sbt XXX`は[sbt-launch.jar](https://github.com/sbt/launcher)から[sbt](https://github.com/sbt/sbt)の`xMain`関数を実行
@@ -300,6 +352,7 @@ sealed class Setting[T] private[Init] (
 
 ### `sealed abstract class SettingKey[T]`
 
+macroの話は少し重たいので、Setting typeとなると覚えていただければOK
 ```scala
 sealed abstract class SettingKey[T]
     extends ScopedTaskable[T]
@@ -319,30 +372,11 @@ sealed abstract class SettingKey[T]
 }
 ```
 
---
-
-### `def settingAssignMacroImpl`
-
-ココらへんでmacroの知識が無くて少し死にたくなる（メモ）
-
-```scala
-// sbt.std.TaskMacro.scala
-
-/** Implementation of := macro for settings. */
-def settingAssignMacroImpl[T: c.WeakTypeTag](c: blackbox.Context)(
-    v: c.Expr[T]): c.Expr[Setting[T]] = {
-  val init = SettingMacro.settingMacroImpl[T](c)(v)
-  val assign = transformMacroImpl(c)(init.tree)(AssignInitName)
-  c.Expr[Setting[T]](assign)
-}
-```
-
-
 ---
 
 ## Build Definition
 
-* `settings` 内に記載
+`settings` 内に記載
 
 ```scala
 lazy val root = (project in file("."))
@@ -355,7 +389,7 @@ lazy val root = (project in file("."))
 
 ## `settings`
 
-* `sbt/Project.scala`
+`sbt/Project.scala`
 
 ```scala
 def settings: Seq[Setting[_]]
@@ -367,7 +401,7 @@ def settings(ss: Def.SettingsDefinition*): Project =
 
 ## `Setting`
 
-* `Import.scala`
+`Import.scala`
 
 ```scala
 type Setting[T] = Def.Setting[T]
@@ -376,7 +410,7 @@ type Setting[T] = Def.Setting[T]
 
 ## `Setting`
 
-* `sbt/internal/util/Settings.scala`
+`sbt/internal/util/Settings.scala`
 
 ```scala
 sealed trait Settings[Scope] {
@@ -399,49 +433,14 @@ sealed trait Settings[Scope] {
 object Def extends Init[Scope] with TaskMacroExtra
 ```
 
----
-
-## DSL(Domain-Specific Language)
-
-```scala
-organization := {"com.example"}
-```
-
-* `organization` : key
-* `:=` : opretator
-* `{"com.example"}` : (settings/task) body
 
 ---
-
-## Keys
-
-* [`SettingKey[T]`](https://www.scala-sbt.org/1.x/api/sbt/SettingKey.html)
-    * サブプロジェクト読み込み時に値を保持
-* [`TaskKey[T]`](https://www.scala-sbt.org/1.x/api/sbt/TaskKey.html)
-    * 毎回値を計算（副作用あり）
-* [`InputKey[T]`](https://www.scala-sbt.org/1.x/api/sbt/InputKey.html)
-    * コマンドライン引数を入力として持つタスクキー
-
---
-
-## Custom Keys
-
-```scala
-import sbt.Keys._
-lazy val hello = taskKey[Unit]("An example task")
-```
-
-> 一般的に、初期化順問題を避けるために val の代わりに lazy val が用いられることが多い。
-
---
 
 ## [Default Keys](https://www.scala-sbt.org/1.x/api/sbt/Keys$.html)
 
---
+---
 
 ## [KeyRanks](https://www.scala-sbt.org/1.x/api/sbt/KeyRanks$.html)
-
-* 何に使われているか調査
 
 ranks
 
@@ -463,32 +462,74 @@ final val DefaultInputRank = ATask // input tasks are likely a main task
 final val DefaultSettingRank = (ASetting + BSetting) / 2
 ```
 
+--
+
+
+## `AttributeKey[T]`
+
+
+他のキーの中でキーの相対的な重要性を識別する
+```scala
+sealed trait AttributeKey[T] {
+// ...
+  /** Identifies the relative importance of a key among other keys.*/
+  def rank: Int
+// ...
+}
+
+```
+
+--
+
+## rankの使用箇所
+
+```scala
+// sbt.Main
+def sortByRank(keys: Seq[AttributeKey[_]]): Seq[AttributeKey[_]] = keys.sortBy(_.rank)
+
+def topNRanked(n: Int) = (keys: Seq[AttributeKey[_]]) => sortByRank(keys).take(n)
+def highPass(rankCutoff: Int) =
+  (keys: Seq[AttributeKey[_]]) => sortByRank(keys).takeWhile(_.rank <= rankCutoff)
+```
+
+--
+
+## `tasks` or `settings` commandで使用
+
+標準だとtasksはrank6以上、settingsはrank11以上
+
+`-v` で表示件数を変更することも可能
+
+```bash
+$ sbt "help settings"
+Syntax summary
+        settings [-(v|-vv|...|-V)] [<filter>]
+
+settings
+        Displays the main settings defined directly or indirectly for the current project.
+
+-v
+        Displays additional settings.  More 'v's increase the number of settings displayed.
+
+-V
+        displays all settings
+
+<filter>
+        Restricts the settings that are displayed.  The names of settings are searched for
+        an exact match against the filter, in which case only the description of the
+        exact match is displayed.  Otherwise, the filter is interpreted as a regular
+        expression and all settings whose name or description match the regular
+        expression are displayed.  Note that this is an additional filter on top of
+        the settings selected by the -v style switches, so you must specify -V to search
+        all settings.  Use the help command to search all commands, tasks, and
+        settings at once.
+```
+
 ---
 
 ## Task Graph
 
 * task graphとはなんぞや
-
----
-
-## Build Syntax
-
-```scala
-private[sbt] trait BuildSyntax {
-  import language.experimental.macros
-  def settingKey[T](description: String): SettingKey[T] = macro std.KeyMacro.settingKeyImpl[T]
-  def taskKey[T](description: String): TaskKey[T] = macro std.KeyMacro.taskKeyImpl[T]
-  def inputKey[T](description: String): InputKey[T] = macro std.KeyMacro.inputKeyImpl[T]
-
-  def enablePlugins(ps: AutoPlugin*): DslEntry = DslEntry.DslEnablePlugins(ps)
-  def disablePlugins(ps: AutoPlugin*): DslEntry = DslEntry.DslDisablePlugins(ps)
-  def configs(cs: Configuration*): DslEntry = DslEntry.DslConfigs(cs)
-  def dependsOn(deps: ClasspathDep[ProjectReference]*): DslEntry = DslEntry.DslDependsOn(deps)
-  // avoid conflict with `sbt.Keys.aggregate`
-  def aggregateProjects(refs: ProjectReference*): DslEntry = DslEntry.DslAggregate(refs)
-}
-private[sbt] object BuildSyntax extends BuildSyntax
-```
 
 
 ---
