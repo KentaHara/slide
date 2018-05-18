@@ -50,7 +50,7 @@ sbt.version=1.1.4
 |:---:|:---:|
 |`organization`|key|
 |`:=`|operator|
-|`{"com.example"}`|(settings/task) body|
+|`{"com.example"}`|(setting/task) body|
 
 ```scala
 organization := {"com.example"}
