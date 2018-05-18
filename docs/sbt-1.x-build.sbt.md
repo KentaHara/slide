@@ -20,11 +20,15 @@
 
 ## 目次
 
-`SettingKey[T]` 、 `TaskKey[T]` 、 `InputKey[T]` の性質
+`SettingKey[T]`、`TaskKey[T]`の基本事項
 
-Keys.scalaに関して
+`build.sbt`の呼び出しについて（単純な追っかけ）
 
-余力があれば、その他Libraryなど紹介
+`Setting[T]`と`SettingKey[T]`、`TaskKey[T]`の関係
+
+KeyのRankについて
+
+sbt libraryの紹介（少々）
 
 ---
 
@@ -426,7 +430,7 @@ sealed class Setting[T] private[Init] (
 
 ## `SettingKey`
 
-macroの話は少し重たいので、Setting typeとなると覚えていただければOK
+macroの話は少し重たいので、Setting typeとなると覚えていただきたい...
 
 ```scala
 sealed abstract class SettingKey[T]
@@ -518,6 +522,7 @@ final val DefaultSettingRank = (ASetting + BSetting) / 2
 
 
 他のキーの中でキーの相対的な重要性を識別する
+
 ```scala
 sealed trait AttributeKey[T] {
 // ...
@@ -544,8 +549,13 @@ def highPass(rankCutoff: Int) =
 標準だとtasksはrank6以上、settingsはrank11以上
 
 `-v` で表示件数を変更することも可能
+
 ```bash
 $ sbt "help settings"
+...
+-v
+  Displays additional settings.
+  More 'v's increase the number of settings displayed.
 ...
 ```
 
@@ -575,6 +585,59 @@ $ sbt release
 --
 
 余力があれば調べるが、多分このままで行くはず
+
+---
+
+# まとめ
+
+--
+
+## `SettingKey[T]`、`TaskKey[T]`の基本事項
+
+```scala
+organization := {"com.example"}
+```
+
+--
+
+## `build.sbt`の呼び出しについて
+
+![Load.defaultLoad.apply](https://www.scala-sbt.org/1.0/docs/files/settings-initialization-load-ordering.png)
+
+--
+
+## `Setting[T]`と`SettingKey[T]`、`TaskKey[T]`の関係
+
+Keyから`Setting[T]`として呼び出し
+
+```scala
+sealed abstract class SettingKey[T]
+// ...
+  final def :=(v: T): Setting[T] = macro std.TaskMacro.settingAssignMacroImpl[T]
+
+  final def +=[U](v: U)(implicit a: Append.Value[T, U]): Setting[T] =
+    macro std.TaskMacro.settingAppend1Impl[T, U]
+
+  final def ++=[U](vs: U)(implicit a: Append.Values[T, U]): Setting[T] =
+    macro std.TaskMacro.settingAppendNImpl[T, U]
+// ...
+}
+```
+
+--
+
+## KeyのRankについて
+
+help時の出力数の制御や、XXXXのために使用されている
+
+```bash
+$ sbt "help settings"
+...
+-v
+  Displays additional settings.
+  More 'v's increase the number of settings displayed.
+...
+```
 
 ---
 
