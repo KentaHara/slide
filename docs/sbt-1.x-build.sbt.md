@@ -56,6 +56,13 @@ organization := {"com.example"}
 
 ## operator
 
+|key|効果|
+|:---:|:---:|
+|`:=`|値の置換|
+|`+=`|値の追加|
+|`++=`|複数の値の追加|
+
+
 --
 
 ## example
@@ -82,7 +89,8 @@ scalacOptions ++= Seq(
 * [`SettingKey[T]`](https://www.scala-sbt.org/1.x/api/sbt/SettingKey.html)
     * サブプロジェクト読み込み時に値を保持
 * [`TaskKey[T]`](https://www.scala-sbt.org/1.x/api/sbt/TaskKey.html)
-    * 毎回値を計算
+    * compile or package時に値を計算
+    * [Task vs Setting keys](https://www.scala-sbt.org/1.0/docs/Basic-Def.html#Task+vs+Setting+keys)
 * [`InputKey[T]`](https://www.scala-sbt.org/1.x/api/sbt/InputKey.html)
     * コマンドライン引数を入力として持つタスクキー
 
@@ -96,25 +104,11 @@ scalacOptions ++= Seq(
 import sbt.Keys._
 lazy val hello = taskKey[Unit]("An example task")
 ```
+
 --
 
 ## [Default Keys](https://www.scala-sbt.org/1.x/api/sbt/Keys$.html)
 
-```scala
-val name = settingKey[String]("Project name.").withRank(APlusSetting)
-```
-
---
-
-## [Task vs Setting keys](https://www.scala-sbt.org/1.0/docs/Basic-Def.html#Task+vs+Setting+keys)
-
-`SettingKey[T]`はサブプロジェクト読み込み時に値を保持
-
-`TaskKey[T]`はcompile or package時に値を計算・保持
-
---
-
-## Keys Definition
 
 ```scala
 // settingKey
