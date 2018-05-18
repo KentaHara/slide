@@ -42,11 +42,11 @@ sbt.version=1.1.4
 
 ## 定義
 
-`organization` : key
-
-`:=` : operator
-
-`{"com.example"}` : (settings/task) body
+|例|名称|
+|:---:|:---:|
+|`organization`|key|
+|`:=`|operator|
+|`{"com.example"}`|(settings/task) body|
 
 ```scala
 organization := {"com.example"}
