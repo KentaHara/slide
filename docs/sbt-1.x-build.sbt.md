@@ -22,11 +22,19 @@
 
 `SettingKey[T]`、`TaskKey[T]`の基本事項
 
+▼
+
 `build.sbt`の呼び出しについて（単純な追っかけ）
+
+▼
 
 `Setting[T]`と`SettingKey[T]`、`TaskKey[T]`の関係
 
+▼
+
 KeyのRankについて
+
+▼
 
 sbt libraryの紹介（少々）
 
