@@ -341,7 +341,7 @@ def defaultLoad(
 
 ## `Load.defaultLoad.apply`
 
-![Load.defaultLoad.apply](https://www.scala-sbt.org/1.0/docs/files/settings-initialization-load-ordering.png)
+[<img src="https://www.scala-sbt.org/1.0/docs/files/settings-initialization-load-ordering.png" style="width:500px; margin:0; border:none">](https://www.facebook.com/blanc.et.noir.rinc)
 
 [sbt: Setting Initialization](https://www.scala-sbt.org/1.0/docs/Setting-Initialization.html)より引用
 
