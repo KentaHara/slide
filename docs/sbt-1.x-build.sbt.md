@@ -290,13 +290,8 @@ def loadProjectCommands(arg: String): List[String] =
 
 ## `loadProjectCommand`
 
-- command
-    - `LoadFailed`
-    - `LoadProjectImpl`
-- arg
-    - Project.Value
-        - `plugins`
-        - `returns`
+command -> `LoadFailed` or `LoadProjectImpl`
+arg -> `plugins` or `returns`
 
 ```scala
 private[this] def loadProjectCommand(command: String, arg: String): String =
