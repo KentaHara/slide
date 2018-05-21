@@ -562,8 +562,6 @@ def highPass(rankCutoff: Int) =
 
 標準だとtasksはrank6(AMinusTask)以上、settingsはrank11(AMinusSetting)以上
 
-`-v` で表示件数を変更することも可能
-
 ```bash
 $ sbt "help settings"
 ...
@@ -571,6 +569,7 @@ $ sbt "help settings"
   Displays additional settings.
   More 'v's increase the number of settings displayed.
 ...
+$ sbt "settings -vvv" # v*25個表示
 ```
 
 ---
