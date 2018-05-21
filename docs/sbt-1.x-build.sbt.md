@@ -10,6 +10,10 @@
 #### 2016.3 九州工業大学大学院 修了
 #### 現在 株式会社ファンコミュニケーションズ
 
+github
+twitter
+Facebook
+
 ---
 
 ## 目的
@@ -162,7 +166,7 @@ def settings(ss: Def.SettingsDefinition*): Project =
 
 ---
 
-# `build.sbt`
+# `sbt`
 
 StateとCommandの詳細については話しません
 
@@ -336,7 +340,7 @@ def defaultLoad(
 
 ## `Load.defaultLoad.apply`
 
-![Load.defaultLoad.apply](https://www.scala-sbt.org/1.0/docs/files/settings-initialization-load-ordering.png =500x)
+![Load.defaultLoad.apply](https://www.scala-sbt.org/1.0/docs/files/settings-initialization-load-ordering.png)
 
 [sbt: Setting Initialization](https://www.scala-sbt.org/1.0/docs/Setting-Initialization.html)より引用
 
