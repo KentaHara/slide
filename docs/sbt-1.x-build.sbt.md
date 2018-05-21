@@ -411,8 +411,6 @@ build.sbt --load--> Setting
 
 ## `Setting`
 
-ScopedKey等について一言ずつ追記する
-
 ```scala
 sealed trait SettingsDefinition {
   def settings: Seq[Setting[_]]
@@ -427,6 +425,12 @@ sealed class Setting[T] private[Init] (
   // ...
 }
 ```
+
+| type |  |
+|---:|:---|
+|ScopedKey| Scope + AttributeKeyのcase class|
+|Initialize|[タスクグラフ](https://www.scala-sbt.org/1.x/docs/Task-Graph.html)のノードを定義|
+|SourcePosition|File pathやFileのLineを保持|
 
 --
 
