@@ -11,9 +11,9 @@
 #### 現在 株式会社ファンコミュニケーションズ
 
 
-[<img src="img/twitter.png" width=128px> chara06ken](https://github.com/KentaHara) /
-[<img src="img/github.svg" width=128px> KentaHara](https://github.com/KentaHara) /
-[<img src="img/facebook.png" width=128px>](https://www.facebook.com/blanc.et.noir.rinc)
+[<img src="img/twitter.png" style="width:64px; border:none"> chara06ken](https://github.com/KentaHara) /
+[<img src="img/github.svg" style="width:64px; border:none"> KentaHara](https://github.com/KentaHara) /
+[<img src="img/facebook.png" style="width:64px; border:none">](https://www.facebook.com/blanc.et.noir.rinc)
 
 ---
 
