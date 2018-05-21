@@ -295,7 +295,7 @@ def loadProjectCommands(arg: String): List[String] =
 |param| |
 | ---: | :--- |
 |command| `LoadFailed` or `LoadProjectImpl`|
-| arg   | `plugins` or `returns`| 
+| arg   | `plugins` or `returns`|
 
 ```scala
 private[this] def loadProjectCommand(command: String, arg: String): String =
@@ -363,8 +363,9 @@ def defaultLoad(
 
 ## `Load.resolveProject -> expandSettings`
 
-`AddSettings.allDefaults`によりloadするファイル群を設定している
-型`Setting`により各種設定を読み込んでいる
+`AddSettings.allDefaults`によりloadするファイル群を設定
+
+型`Setting`により各種設定を読み込み
 
 ```scala
 // Expand the AddSettings instance into a real Seq[Setting[_]] we'll use on the project
