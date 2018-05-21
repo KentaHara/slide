@@ -564,18 +564,12 @@ sealed trait AttributeKey[T] {
 
 --
 
-## `tasks` or `settings` commandで使用
+## `tasks`/`settings` command
 
-```scala
-// sbt.Main
-def sortByRank(keys: Seq[AttributeKey[_]]): Seq[AttributeKey[_]] = keys.sortBy(_.rank)
-
-def topNRanked(n: Int) = (keys: Seq[AttributeKey[_]]) => sortByRank(keys).take(n)
-def highPass(rankCutoff: Int) =
-  (keys: Seq[AttributeKey[_]]) => sortByRank(keys).takeWhile(_.rank <= rankCutoff)
-```
-
-標準だとtasksはrank6(AMinusTask)以上、settingsはrank11(AMinusSetting)以上
+| |表示対象rank|
+|---:|:---:|
+|tasks|6(AMinusTask)以上|
+|settings|11(AMinusSetting)以上|
 
 ```bash
 $ sbt "help settings"
@@ -585,24 +579,6 @@ $ sbt "help settings"
   More 'v's increase the number of settings displayed.
 ...
 $ sbt "settings -vvv" # v*25個表示
-```
-
----
-
-# sbt plugin
-
---
-
-## [sbt release](https://github.com/sbt/sbt-release)
-
-projectのversion管理をするplugin
-
-```scala
-addSbtPlugin("com.github.gseitz" % "sbt-release" % "1.0.8")
-```
-
-```bash
-$ sbt release
 ```
 
 ---
@@ -663,6 +639,21 @@ val name =
 ---
 
 # NOTE
+
+--
+
+## [sbt release](https://github.com/sbt/sbt-release)
+
+projectのversion管理をするplugin
+
+```scala
+addSbtPlugin("com.github.gseitz" % "sbt-release" % "1.0.8")
+```
+
+```bash
+$ sbt release
+```
+
 
 --
 
@@ -746,4 +737,16 @@ def initialize: Command = Command.command(InitCommand) { s =>
   /*"load-commands -base ~/.sbt/commands" :: */
   readLines(readable(sbtRCs(s))).toList ::: s
 }
+```
+
+--
+## `tasks`/`settings` command
+
+```scala
+// sbt.Main
+def sortByRank(keys: Seq[AttributeKey[_]]): Seq[AttributeKey[_]] = keys.sortBy(_.rank)
+
+def topNRanked(n: Int) = (keys: Seq[AttributeKey[_]]) => sortByRank(keys).take(n)
+def highPass(rankCutoff: Int) =
+  (keys: Seq[AttributeKey[_]]) => sortByRank(keys).takeWhile(_.rank <= rankCutoff)
 ```
