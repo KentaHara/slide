@@ -707,3 +707,28 @@ final val CSetting = 100
 // explicit settings
 final val DSetting = 10000
 ```
+
+--
+
+## `runEarly(DefaultsCommand)`
+
+definedCommandsに設定しているだけ
+
+```scala
+def defaults = Command.command(DefaultsCommand) { s =>
+  s.copy(definedCommands = DefaultCommands)
+}
+```
+
+--
+
+## `runEarly(InitCommand)`
+
+file読み込みからinit command
+
+```scala
+def initialize: Command = Command.command(InitCommand) { s =>
+  /*"load-commands -base ~/.sbt/commands" :: */
+  readLines(readable(sbtRCs(s))).toList ::: s
+}
+```
