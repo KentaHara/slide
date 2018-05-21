@@ -45,15 +45,13 @@
 
 `build.sbt`の呼び出しについて（単純な追っかけ）
 
+▼
+
 `Setting[T]`と`SettingKey[T]`、`TaskKey[T]`の関係
 
 ▼
 
 KeyのRankについて
-
-▼
-
-sbt libraryの紹介（少々）
 
 ---
 
@@ -65,14 +63,16 @@ sbt.version=1.1.4
 
 ---
 
-# `SettingKey[T]`、`TaskKey[T]`の基本事項
+# `SettingKey[T]`
+# `TaskKey[T]`
+# の基本事項
 
 --
 
 ## [DSL(Domain-Specific Language)](https://www.scala-sbt.org/1.0/docs/Basic-Def.html)
 
 |例|名称|
-|:---:|:---:|
+|---:|:---|
 |`organization`|key|
 |`:=`|operator|
 |`{"com.example"}`|(setting/task) body|
@@ -85,8 +85,8 @@ organization := {"com.example"}
 
 ## operator
 
-|key|効果|
-|:---:|:---:|
+|key| |
+|---:|:---|
 |`:=`|値の置換|
 |`+=`|値の追加|
 |`++=`|複数の値の追加|
@@ -120,16 +120,6 @@ scalacOptions ++= Seq(
 * [`InputKey[T]`](https://www.scala-sbt.org/1.x/api/sbt/InputKey.html)
     * コマンドライン引数を入力として持つタスクキー
 
---
-
-## Custom Keys
-
-一般的に、初期化順問題を避けるために val の代わりに lazy val が用いられることが多い。
-
-```scala
-import sbt.Keys._
-lazy val hello = taskKey[Unit]("An example task")
-```
 
 --
 
@@ -154,6 +144,18 @@ val libraryDependencies =
 // taskKey
 val scalacOptions =
   taskKey[Seq[String]]("Options for the Scala compiler.").withRank(BPlusTask)
+```
+
+--
+
+## Custom Keys
+
+一般的に、初期化順問題を避けるために
+valの代わりにlazy valが用いられることが多い
+
+```scala
+import sbt.Keys._
+lazy val hello = taskKey[Unit]("An example task")
 ```
 
 --
@@ -188,10 +190,10 @@ def settings(ss: Def.SettingsDefinition*): Project =
 
 StateとCommandの詳細については話しません
 
-
-State: sbt内でCommandの逐次処理を制御するもの
-
-Command: sbt内での実行単位
+| |ざっくり説明|
+|---:|:---|
+|State|sbt内でCommandの逐次処理を制御するもの|
+|Command|sbt内での実行単位|
 
 --
 
@@ -206,7 +208,7 @@ Command: sbt内での実行単位
 
 ## `xMain`
 
-`BootCommand` によって、sbt起動時にprojectの読み込みを実施
+`BootCommand` により、sbt起動時にprojectの読み込み
 
 ```scala
 /** This class is the entry point for sbt. */
@@ -254,7 +256,7 @@ def DefaultBootCommands: Seq[String] =
 
 ## `LoadProject`
 
-`$ sbt reload` と打てば動作確認できます
+`$ sbt reload` と打てば動作確認可能
 
 ```scala
 // sbt/internal/CommandStrings.scala
@@ -276,7 +278,7 @@ val loadActionParser = token(Space ~> ("plugins" ^^^ Plugins | "return" ^^^ Retu
 
 ## `loadProjectCommands`
 
-`loadProjectCommand`で実際に読み込みをする
+`loadProjectCommand`で実際に読み込み
 
 ```scala
 def loadProjectCommands(arg: String): List[String] =
@@ -306,7 +308,7 @@ private[this] def loadProjectCommand(command: String, arg: String): String =
 
 ## `LoadProjectImpl`
 
-keyの呼び出しは`Load.defaultLoad`によって成される
+keyの呼び出しは`Load.defaultLoad`
 
 ```scala
 // sbt/Main.scala
@@ -355,15 +357,13 @@ def defaultLoad(
 
 ## `Load.defaultLoad.apply`
 
-<img src="https://www.scala-sbt.org/1.0/docs/files/settings-initialization-load-ordering.png" style="width:625px; margin:0; border:none">
+<img src="https://www.scala-sbt.org/1.0/docs/files/settings-initialization-load-ordering.png" style="width:710px; margin:0; border:none">
 
 [sbt: Setting Initialization](https://www.scala-sbt.org/1.0/docs/Setting-Initialization.html)より引用
 
 --
 
 ## `Load.resolveProject -> expandSettings`
-
-`AddSettings.allDefaults`によりloadするファイル群を設定
 
 型`Setting`により各種設定を読み込み
 
@@ -456,7 +456,9 @@ sealed class Setting[T] private[Init] (
 
 ## `SettingKey`
 
-macroの話は少し重たいので、Setting typeとなると覚えていただきたい...
+macroの話は少し重たいので
+
+Setting typeとなると覚えていただきたい...
 
 ```scala
 sealed abstract class SettingKey[T]
@@ -550,7 +552,7 @@ final val DefaultSettingRank = (ASetting + BSetting) / 2
 ## `AttributeKey[T]`
 
 
-他のキーの中でキーの相対的な重要性を識別する
+他のキーの中でキーの相対的な重要性を識別
 
 ```scala
 sealed trait AttributeKey[T] {
@@ -599,7 +601,8 @@ organization := {"com.example"}
 
 ## `build.sbt`の呼び出しについて
 
-![Load.defaultLoad.apply](https://www.scala-sbt.org/1.0/docs/files/settings-initialization-load-ordering.png)
+<img src="https://www.scala-sbt.org/1.0/docs/files/settings-initialization-load-ordering.png" style="width:710px; margin:0; border:none">
+
 
 --
 
@@ -625,7 +628,7 @@ sealed abstract class SettingKey[T]
 
 ## KeyのRankについて
 
-help時の出力数の制御や、XXXXのために使用されている
+help時の出力数の制御のために使用されている
 
 ```scala
 val name =
