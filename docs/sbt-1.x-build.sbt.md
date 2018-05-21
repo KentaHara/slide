@@ -21,6 +21,18 @@
 
 `build.sbt` を理解した上で記述できるようになれたら嬉しい
 
+--
+
+`build.sbt`ってなんとなく書けば動きますよね
+
+--
+
+良さでもあります
+
+--
+
+でも、中身を理解して使えたほうがかっこいいですよね
+
 ---
 
 ## 目次
@@ -30,8 +42,6 @@
 ▼
 
 `build.sbt`の呼び出しについて（単純な追っかけ）
-
-▼
 
 `Setting[T]`と`SettingKey[T]`、`TaskKey[T]`の関係
 
@@ -79,7 +89,6 @@ organization := {"com.example"}
 |`+=`|値の追加|
 |`++=`|複数の値の追加|
 
-
 --
 
 ## example
@@ -124,6 +133,12 @@ lazy val hello = taskKey[Unit]("An example task")
 
 ## [Default Keys](https://www.scala-sbt.org/1.x/api/sbt/Keys$.html)
 
+```scala
+name := "scala-examples"
+libraryDependencies ++= Seq()
+
+scalacOptions ++= Seq()
+```
 
 ```scala
 // settingKey
