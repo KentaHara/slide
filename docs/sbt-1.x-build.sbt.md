@@ -127,12 +127,12 @@ lazy val hello = taskKey[Unit]("An example task")
 val name =
   settingKey[String]("Project name.").withRank(APlusSetting)
 
-val libraryDependencies = 
+val libraryDependencies =
   settingKey[Seq[ModuleID]]("Declares managed dependencies.").withRank(APlusSetting)
 
 
 // taskKey
-val scalacOptions = 
+val scalacOptions =
   taskKey[Seq[String]]("Options for the Scala compiler.").withRank(BPlusTask)
 ```
 
@@ -380,7 +380,7 @@ val allDefaults: AddSettings = seq(autoPlugins, buildScalaFiles, userSettings, d
 
 
 /** Adds all settings from autoplugins. */
-val autoPlugins : AddSettings = new AutoPlugins(const(true)) 
+val autoPlugins : AddSettings = new AutoPlugins(const(true))
 
 /** Settings specified in Build.scala `Project` constructors. */
 val buildScalaFiles: AddSettings = BuildScalaFiles
@@ -495,6 +495,8 @@ scalacOptions ++= Seq(
 
 # [KeyRanks](https://www.scala-sbt.org/1.x/api/sbt/KeyRanks$.html)
 
+> task and setting ranks, used to prioritize displaying information
+
 ```scala
 val name =
   settingKey[String]("Project name.").withRank(APlusSetting)
@@ -566,11 +568,6 @@ $ sbt "help settings"
   More 'v's increase the number of settings displayed.
 ...
 ```
-
---
-
-## keyCompletions on SettingCompletions
-
 
 ---
 
