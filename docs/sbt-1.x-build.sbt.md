@@ -493,12 +493,13 @@ scalacOptions ++= Seq(
 
 # [KeyRanks](https://www.scala-sbt.org/1.x/api/sbt/KeyRanks$.html)
 
-> task and setting ranks, used to prioritize displaying information
 
 ```scala
 val name =
   settingKey[String]("Project name.").withRank(APlusSetting)
 ```
+
+> task and setting ranks, used to prioritize displaying information
 
 --
 
@@ -554,7 +555,7 @@ def highPass(rankCutoff: Int) =
   (keys: Seq[AttributeKey[_]]) => sortByRank(keys).takeWhile(_.rank <= rankCutoff)
 ```
 
-標準だとtasksはrank6以上、settingsはrank11以上
+標準だとtasksはrank6(AMinusTask)以上、settingsはrank11(AMinusSetting)以上
 
 `-v` で表示件数を変更することも可能
 
@@ -584,10 +585,6 @@ addSbtPlugin("com.github.gseitz" % "sbt-release" % "1.0.8")
 ```bash
 $ sbt release
 ```
-
---
-
-余力があれば調べるが、多分このままで行くはず
 
 ---
 
