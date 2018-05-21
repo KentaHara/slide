@@ -10,9 +10,10 @@
 #### 2016.3 九州工業大学大学院 修了
 #### 現在 株式会社ファンコミュニケーションズ
 
-github
-twitter
-Facebook
+
+[<img src="img/twitter.png" width=128px> chara06ken](https://github.com/KentaHara) /
+[<img src="img/github.svg" width=128px> KentaHara](https://github.com/KentaHara) /
+[<img src="img/facebook.png" width=128px>](https://www.facebook.com/blanc.et.noir.rinc)
 
 ---
 
