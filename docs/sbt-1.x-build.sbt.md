@@ -685,3 +685,25 @@ sbt起動時にsbtに記述されているsettingsを呼び出すために使用
 ```scala
 object Defaults extends BuildCommon
 ```
+
+--
+
+## KeyRanks
+
+```scala
+// main settings
+final val APlusSetting = 9
+final val ASetting = 10
+final val AMinusSetting = 11
+
+// secondary settings
+final val BPlusSetting = 39
+final val BSetting = 40
+final val BMinusSetting = 41
+
+// advanced settings
+final val CSetting = 100
+
+// explicit settings
+final val DSetting = 10000
+```
