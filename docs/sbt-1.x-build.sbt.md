@@ -48,11 +48,11 @@ sbt.version=1.1.4
 
 ---
 
-# [DSL(Domain-Specific Language)](https://www.scala-sbt.org/1.0/docs/Basic-Def.html)
+# `SettingKey[T]`、`TaskKey[T]`の基本事項
 
 --
 
-## 定義
+## [DSL(Domain-Specific Language)](https://www.scala-sbt.org/1.0/docs/Basic-Def.html)
 
 |例|名称|
 |:---:|:---:|
@@ -80,11 +80,9 @@ organization := {"com.example"}
 ## example
 
 ```scala
-// setting
 name := "scala-examples"
 scalaVersion := "2.12.3"
 
-// task
 scalacOptions ++= Seq(
     // ...
 )
@@ -157,6 +155,7 @@ lazy val root = (project in file("."))
 ```scala
 // sbt.Project
 def settings: Seq[Setting[_]]
+
 def settings(ss: Def.SettingsDefinition*): Project =
       copy(settings = (settings: Seq[Def.Setting[_]]) ++ Def.settings(ss: _*))
 ```
@@ -304,13 +303,8 @@ def doLoadProject(s0: State, action: LoadAction.Value): State = {
   val (eval, structure) =
     try Load.defaultLoad(s, base, s.log, Project.inPluginProject(s), Project.extraBuilds(s))
     catch {
-      case ex: compiler.EvalException =>
-        s0.log.debug(ex.getMessage)
-        ex.getStackTrace map (ste => s"\tat $ste") foreach (s0.log.debug(_))
-        ex.setStackTrace(Array.empty)
-        throw ex
+      //..
     }
-
   val session = Load.initialSession(structure, eval, s0)
   SessionSettings.checkSession(session, s)
   Project.setProject(session, structure, s)
@@ -342,7 +336,7 @@ def defaultLoad(
 
 ## `Load.defaultLoad.apply`
 
-![Load.defaultLoad.apply](https://www.scala-sbt.org/1.0/docs/files/settings-initialization-load-ordering.png)
+![Load.defaultLoad.apply](https://www.scala-sbt.org/1.0/docs/files/settings-initialization-load-ordering.png =500x)
 
 [sbt: Setting Initialization](https://www.scala-sbt.org/1.0/docs/Setting-Initialization.html)より引用
 
