@@ -11,7 +11,7 @@
 #### 現在 株式会社ファンコミュニケーションズ
 
 
-[<img src="img/twitter.png"  style="width:55px; margin:0; border:none"> chara06ken](https://github.com/KentaHara) /
+[<img src="img/twitter.png"  style="width:55px; margin:0; border:none"> chara06ken](https://twitter.com/chara06ken) /
 [<img src="img/github.svg"   style="width:55px; margin:0; border:none"> KentaHara](https://github.com/KentaHara) /
 [<img src="img/facebook.png" style="width:55px; margin:0; border:none">](https://www.facebook.com/blanc.et.noir.rinc)
 
@@ -31,7 +31,9 @@
 
 --
 
-でも、中身を理解して使えたほうがかっこいいですよね
+でも、中身を理解して使えたほうが
+
+かっこいいですよね
 
 ---
 
@@ -290,8 +292,10 @@ def loadProjectCommands(arg: String): List[String] =
 
 ## `loadProjectCommand`
 
-command -> `LoadFailed` or `LoadProjectImpl`
-arg -> `plugins` or `returns`
+|param| |
+| ---: | :--- |
+|command| `LoadFailed` or `LoadProjectImpl`|
+| arg   | `plugins` or `returns`| 
 
 ```scala
 private[this] def loadProjectCommand(command: String, arg: String): String =
@@ -351,7 +355,7 @@ def defaultLoad(
 
 ## `Load.defaultLoad.apply`
 
-[<img src="https://www.scala-sbt.org/1.0/docs/files/settings-initialization-load-ordering.png" style="width:625px; margin:0; border:none">](https://www.facebook.com/blanc.et.noir.rinc)
+<img src="https://www.scala-sbt.org/1.0/docs/files/settings-initialization-load-ordering.png" style="width:625px; margin:0; border:none">
 
 [sbt: Setting Initialization](https://www.scala-sbt.org/1.0/docs/Setting-Initialization.html)より引用
 
